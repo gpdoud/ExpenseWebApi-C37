@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<ExpenseDbContext>(x => {
-    x.UseSqlServer(builder.Configuration.GetConnectionString("DevMac"));
+    x.UseSqlServer(builder.Configuration.GetConnectionString("DevWin"));
 });
 
 builder.Services.AddCors();

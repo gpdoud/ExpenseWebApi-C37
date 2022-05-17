@@ -40,7 +40,10 @@ namespace ExpenseWebApi.Controllers {
             if (_context.Expenses == null) {
                 return NotFound();
             }
-            var expense = await _context.Expenses.FindAsync(id);
+            var expense = await _context.Expenses
+                                            .Include(x => x.Employee)
+                                            .Include(x => x.Expenselines)
+                                            .SingleOrDefaultAsync(x => x.Id == id);
 
             if (expense == null) {
                 return NotFound();
