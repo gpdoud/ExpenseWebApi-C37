@@ -3,6 +3,7 @@ using ExpenseWebApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExpenseWebApi.Migrations
 {
     [DbContext(typeof(ExpenseDbContext))]
-    partial class ExpenseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220518132106_added-expenses-due-paid-to-employee")]
+    partial class addedexpensesduepaidtoemployee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,7 +57,7 @@ namespace ExpenseWebApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Employees", (string)null);
+                    b.ToTable("Employees");
                 });
 
             modelBuilder.Entity("ExpenseWebApi.Models.Expense", b =>
@@ -86,7 +88,7 @@ namespace ExpenseWebApi.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("Expenses", (string)null);
+                    b.ToTable("Expenses");
                 });
 
             modelBuilder.Entity("ExpenseWebApi.Models.Expenseline", b =>
@@ -112,7 +114,7 @@ namespace ExpenseWebApi.Migrations
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("Expenselines", (string)null);
+                    b.ToTable("Expenselines");
                 });
 
             modelBuilder.Entity("ExpenseWebApi.Models.Item", b =>
@@ -133,7 +135,7 @@ namespace ExpenseWebApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Items", (string)null);
+                    b.ToTable("Items");
                 });
 
             modelBuilder.Entity("ExpenseWebApi.Models.Expense", b =>

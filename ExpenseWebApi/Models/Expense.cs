@@ -17,7 +17,7 @@ namespace ExpenseWebApi.Models {
         public int EmployeeId { get; set; } = 0;
         public virtual Employee? Employee { get; set; } = null;
 
-        public virtual ICollection<Expenseline> Expenselines { get; set; }
+        public virtual ICollection<Expenseline>? Expenselines { get; set; }
     }
 }
 
