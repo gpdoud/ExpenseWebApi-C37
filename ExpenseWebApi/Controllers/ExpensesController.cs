@@ -70,7 +70,9 @@ namespace ExpenseWebApi.Controllers {
             if (_context.Expenses == null) {
                 return NotFound();
             }
-            return await _context.Expenses.ToListAsync();
+            return await _context.Expenses
+                                    .Include(x => x.Employee)
+                                    .ToListAsync();
         }
 
         // GET: api/Expenses/5
@@ -82,6 +84,7 @@ namespace ExpenseWebApi.Controllers {
             var expense = await _context.Expenses
                                             .Include(x => x.Employee)
                                             .Include(x => x.Expenselines)
+                                                .ThenInclude(x => x.Item)
                                             .SingleOrDefaultAsync(x => x.Id == id);
 
             if (expense == null) {
