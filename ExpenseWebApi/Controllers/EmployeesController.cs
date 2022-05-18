@@ -23,7 +23,7 @@ namespace ExpenseWebApi.Controllers
         [HttpGet("{email}/{password}")]
         public async Task<ActionResult<Employee>> Login(string email, string password) {
             var empl = await _context.Employees
-                                        .SingleOrDefaultAsync(x => x.Emil == email && x.Password == password);
+                                        .SingleOrDefaultAsync(x => x.Email == email && x.Password == password);
             if(empl is null) {
                 return NotFound();
             }
