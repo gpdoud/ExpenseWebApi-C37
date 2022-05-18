@@ -39,7 +39,8 @@ namespace ExpenseWebApi.Controllers {
             if (_context.Expenselines == null) {
                 return NotFound();
             }
-            return await _context.Expenselines.ToListAsync();
+            return await _context.Expenselines
+                                    .ToListAsync();
         }
 
         // GET: api/Expenselines/5
@@ -48,7 +49,9 @@ namespace ExpenseWebApi.Controllers {
             if (_context.Expenselines == null) {
                 return NotFound();
             }
-            var expenseline = await _context.Expenselines.FindAsync(id);
+            var expenseline = await _context.Expenselines
+                                                .Include(x => x.Item)
+                                                .SingleOrDefaultAsync(x => x.Id == id);
 
             if (expenseline == null) {
                 return NotFound();
