@@ -29,7 +29,15 @@ namespace ExpenseWebApi.Controllers {
             if (empl is null) {
                 throw new Exception("Could not read the Employee");
             }
-            empl.ExpensesDue += (reverseExpense) ? exp.Total * -1 : exp.Total;
+            empl.ExpensesDue = (from e in _context.Expenses
+                                join el in _context.Expenselines
+                                    on e.Id equals el.ExpenseId
+                                join i in _context.Items
+                                   on el.ItemId equals i.Id
+                                where e.Status == APPROVED && e.EmployeeId == empl.Id
+                                select new {
+                                    Subtotal = el.Quantity * i.Price
+                                }).Sum(x => x.Subtotal);
             await _context.SaveChangesAsync();
             return Ok();
         }
@@ -92,10 +100,8 @@ namespace ExpenseWebApi.Controllers {
             var prevStatus = expense.Status;
             expense.Status = (expense.Total <= 75) ? APPROVED : REVIEW;
             var rc = await PutExpense(id, expense);
-            if (prevStatus == APPROVED && expense.Status != APPROVED) {
-                await UpdateEmployeeExpenseDue(expense.Id, reverseExpense: true);
-            }
-            if (prevStatus != APPROVED && expense.Status == APPROVED) {
+            if ((prevStatus == APPROVED && expense.Status != APPROVED)  
+                ||(prevStatus != APPROVED && expense.Status == APPROVED)) {
                 await UpdateEmployeeExpenseDue(expense.Id);
             }
             return rc;
