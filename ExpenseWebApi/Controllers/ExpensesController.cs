@@ -20,6 +20,28 @@ namespace ExpenseWebApi.Controllers {
             _context = context;
         }
 
+        private async Task<IActionResult> UpdateEmployeeExpenseDue(int expenseId, bool reverseExpense = false) {
+            var exp = await _context.Expenses.FindAsync(expenseId);
+            if (exp is null) {
+                throw new Exception("Could not read the Expense");
+            }
+            var empl = await _context.Employees.FindAsync(exp.EmployeeId);
+            if (empl is null) {
+                throw new Exception("Could not read the Employee");
+            }
+            empl.ExpensesDue = (from e in _context.Expenses
+                                join el in _context.Expenselines
+                                    on e.Id equals el.ExpenseId
+                                join i in _context.Items
+                                   on el.ItemId equals i.Id
+                                where e.Status == APPROVED && e.EmployeeId == empl.Id
+                                select new {
+                                    Subtotal = el.Quantity * i.Price
+                                }).Sum(x => x.Subtotal);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
         [HttpGet("approved")]
         public async Task<ActionResult<IEnumerable<Expense>>> GetApprovedExpenses() {
             return await _context.Expenses.Where(x => x.Status == APPROVED).ToListAsync();
@@ -55,22 +77,34 @@ namespace ExpenseWebApi.Controllers {
             return expense;
         }
 
-        [HttpPut("approved/{id}")]
+        [HttpPut("approve/{id}")]
         public async Task<IActionResult> ApproveExpense(int id, Expense expense) {
+            if (expense.Status == APPROVED) {
+                return BadRequest();
+            }
             expense.Status = APPROVED;
-            return await PutExpense(id, expense);
+            var rc = await PutExpense(id, expense);
+            await UpdateEmployeeExpenseDue(expense.Id);
+            return rc;
         }
 
         [HttpPut("reject/{id}")]
         public async Task<IActionResult> RejectExpense(int id, Expense expense) {
             expense.Status = REJECTED;
-            return await PutExpense(id, expense);
+            var rc = await PutExpense(id, expense);
+            return rc;
         }
 
         [HttpPut("review/{id}")]
         public async Task<IActionResult> ReviewExpense(int id, Expense expense) {
-            expense.Status = (expense.Total <= 75) ? APPROVED : REJECTED;
-            return await PutExpense(id, expense);
+            var prevStatus = expense.Status;
+            expense.Status = (expense.Total <= 75) ? APPROVED : REVIEW;
+            var rc = await PutExpense(id, expense);
+            if ((prevStatus == APPROVED && expense.Status != APPROVED)  
+                ||(prevStatus != APPROVED && expense.Status == APPROVED)) {
+                await UpdateEmployeeExpenseDue(expense.Id);
+            }
+            return rc;
         }
 
         // PUT: api/Expenses/5
