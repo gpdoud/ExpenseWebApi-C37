@@ -15,9 +15,34 @@ namespace ExpenseWebApi.Controllers {
         private const string APPROVED = "Approved";
         private const string REJECTED = "Rejected";
         private const string REVIEW = "Review";
+        private const string PAID = "Paid";
 
         public ExpensesController(ExpenseDbContext context) {
             _context = context;
+        }
+
+        [HttpPut("pay/{expenseId}")]
+        public async Task<IActionResult> PayExpense(int expenseId) {
+            // expense status must be approved
+            var exp = await _context.Expenses.FindAsync(expenseId);
+            if(exp is null) {
+                return NotFound();
+            }
+            if(exp.Status != APPROVED) {
+                return BadRequest();
+            }
+            // mark the expense paid
+            exp.Status = PAID;
+            // get the employee
+            var empl = await _context.Employees.FindAsync(exp.EmployeeId);
+            // reduce the employee due and increase employee paid
+            if(empl is null) {
+                throw new Exception("Corrupted FK in expense");
+            }
+            empl.ExpensesDue -= exp.Total;
+            empl.ExpensesPaid += exp.Total;
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
         private async Task<IActionResult> UpdateEmployeeExpenseDue(int expenseId, bool reverseExpense = false) {
