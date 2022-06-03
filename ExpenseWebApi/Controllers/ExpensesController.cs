@@ -6,8 +6,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ExpenseWebApi.Models;
+using Microsoft.AspNetCore.Cors;
 
 namespace ExpenseWebApi.Controllers {
+    //[EnableCors("DefaultPolicy")]
     [Route("api/[controller]")]
     [ApiController]
     public class ExpensesController : ControllerBase {
