@@ -14,10 +14,10 @@ namespace ExpenseWebApi.Controllers {
     [ApiController]
     public class ExpensesController : ControllerBase {
         private readonly ExpenseDbContext _context;
-        private const string APPROVED = "Approved";
-        private const string REJECTED = "Rejected";
-        private const string REVIEW = "Review";
-        private const string PAID = "Paid";
+        private const string APPROVED = "APPROVED";
+        private const string REJECTED = "REJECTED";
+        private const string REVIEW = "REVIEW";
+        private const string PAID = "PAID";
 
         public ExpensesController(ExpenseDbContext context) {
             _context = context;
@@ -71,7 +71,12 @@ namespace ExpenseWebApi.Controllers {
 
         [HttpGet("approved")]
         public async Task<ActionResult<IEnumerable<Expense>>> GetApprovedExpenses() {
-            return await _context.Expenses.Where(x => x.Status == APPROVED).ToListAsync();
+            return await _context.Expenses.Include(x => x.Employee).Where(x => x.Status == APPROVED).ToListAsync();
+        }
+
+        [HttpGet("review")]
+        public async Task<ActionResult<IEnumerable<Expense>>> GetExpensesInReview() {
+            return await _context.Expenses.Include(x => x.Employee).Where(x => x.Status == REVIEW).ToListAsync();
         }
 
         // GET: api/Expenses
