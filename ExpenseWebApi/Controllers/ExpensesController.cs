@@ -14,10 +14,12 @@ namespace ExpenseWebApi.Controllers {
     [ApiController]
     public class ExpensesController : ControllerBase {
         private readonly ExpenseDbContext _context;
-        private const string APPROVED = "APPROVED";
-        private const string REJECTED = "REJECTED";
-        private const string REVIEW = "REVIEW";
-        private const string PAID = "PAID";
+        public static string NEW = "NEW";
+        public static string MODIFIED = "MODIFIED";
+        public static string APPROVED = "APPROVED";
+        public static string REJECTED = "REJECTED";
+        public static string REVIEW = "REVIEW";
+        public static string PAID = "PAID";
 
         public ExpensesController(ExpenseDbContext context) {
             _context = context;

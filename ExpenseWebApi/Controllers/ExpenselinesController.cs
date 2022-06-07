@@ -29,6 +29,7 @@ namespace ExpenseWebApi.Controllers {
                          select new {
                              Subtotal = el.Quantity * i.Price
                          }).Sum(x => x.Subtotal);
+            exp.Status = ExpensesController.MODIFIED;
             await _context.SaveChangesAsync();
             return Ok();
         }
