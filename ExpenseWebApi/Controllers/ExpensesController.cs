@@ -49,12 +49,8 @@ namespace ExpenseWebApi.Controllers {
             return Ok();
         }
 
-        private async Task<IActionResult> UpdateEmployeeExpenseDue(int expenseId, bool reverseExpense = false) {
-            var exp = await _context.Expenses.FindAsync(expenseId);
-            if (exp is null) {
-                throw new Exception("Could not read the Expense");
-            }
-            var empl = await _context.Employees.FindAsync(exp.EmployeeId);
+        private async Task<IActionResult> UpdateEmployeeExpenseDueAndPaid(int employeeId) {
+            var empl = await _context.Employees.FindAsync(employeeId);
             if (empl is null) {
                 throw new Exception("Could not read the Employee");
             }
@@ -67,6 +63,17 @@ namespace ExpenseWebApi.Controllers {
                                 select new {
                                     Subtotal = el.Quantity * i.Price
                                 }).Sum(x => x.Subtotal);
+
+            empl.ExpensesPaid = (from e in _context.Expenses
+                                join el in _context.Expenselines
+                                    on e.Id equals el.ExpenseId
+                                join i in _context.Items
+                                   on el.ItemId equals i.Id
+                                where e.Status == PAID && e.EmployeeId == empl.Id
+                                select new {
+                                    Subtotal = el.Quantity * i.Price
+                                }).Sum(x => x.Subtotal);
+
             await _context.SaveChangesAsync();
             return Ok();
         }
@@ -118,7 +125,7 @@ namespace ExpenseWebApi.Controllers {
             }
             expense.Status = APPROVED;
             var rc = await PutExpense(id, expense);
-            await UpdateEmployeeExpenseDue(expense.Id);
+            await UpdateEmployeeExpenseDueAndPaid(expense.EmployeeId);
             return rc;
         }
 
@@ -126,6 +133,7 @@ namespace ExpenseWebApi.Controllers {
         public async Task<IActionResult> RejectExpense(int id, Expense expense) {
             expense.Status = REJECTED;
             var rc = await PutExpense(id, expense);
+            await UpdateEmployeeExpenseDueAndPaid(expense.EmployeeId);
             return rc;
         }
 
@@ -134,10 +142,7 @@ namespace ExpenseWebApi.Controllers {
             var prevStatus = expense.Status;
             expense.Status = (expense.Total <= 75) ? APPROVED : REVIEW;
             var rc = await PutExpense(id, expense);
-            if ((prevStatus == APPROVED && expense.Status != APPROVED)  
-                ||(prevStatus != APPROVED && expense.Status == APPROVED)) {
-                await UpdateEmployeeExpenseDue(expense.Id);
-            }
+            await UpdateEmployeeExpenseDueAndPaid(expense.EmployeeId);
             return rc;
         }
 
